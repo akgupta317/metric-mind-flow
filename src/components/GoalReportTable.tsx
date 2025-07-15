@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { MoreHorizontal, Filter, X } from 'lucide-react';
+import { MoreHorizontal, Filter, X, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -9,9 +9,10 @@ import { FilterSidebar } from './FilterSidebar';
 
 interface GoalReportTableProps {
   goals: Goal[];
+  onCreateGoal?: () => void;
 }
 
-export const GoalReportTable: React.FC<GoalReportTableProps> = ({ goals }) => {
+export const GoalReportTable: React.FC<GoalReportTableProps> = ({ goals, onCreateGoal }) => {
   const [showFilters, setShowFilters] = useState(false);
 
   const formatNumber = (num: number) => {
@@ -39,16 +40,17 @@ export const GoalReportTable: React.FC<GoalReportTableProps> = ({ goals }) => {
       {/* Header */}
       <div className="border-b border-gray-800 px-6 py-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <h1 className="text-xl font-semibold">Goal Conversions</h1>
-            <div className="flex gap-1 text-sm">
-              <button className="px-3 py-1 bg-gray-800 rounded text-white">Goals</button>
-              <button className="px-3 py-1 text-gray-400 hover:text-white">Properties</button>
-              <button className="px-3 py-1 text-gray-400 hover:text-white">Funnels</button>
-            </div>
-          </div>
+          <h1 className="text-xl font-semibold">Goal Conversions</h1>
           
           <div className="flex items-center gap-4">
+            <Button
+              onClick={onCreateGoal}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Create Goal
+            </Button>
+            
             <Button
               onClick={() => setShowFilters(!showFilters)}
               variant="outline"

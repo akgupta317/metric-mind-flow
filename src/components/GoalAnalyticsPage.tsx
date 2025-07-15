@@ -44,5 +44,5 @@ export const GoalAnalyticsPage = () => {
     return <EmptyGoalsState onCreateGoal={handleCreateGoal} />;
   }
 
-  return <GoalReportTable goals={state.goals} />;
+  return <GoalReportTable goals={state.goals} onCreateGoal={handleCreateGoal} />;
 };

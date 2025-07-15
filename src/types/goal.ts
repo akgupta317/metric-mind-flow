@@ -19,10 +19,9 @@ export interface Goal {
 
 export interface Filter {
   id: string;
-  field: string;
-  operator: string;
+  operand: string; // event_name, city, utm_source, utm_channel, etc.
+  operator: 'includes' | 'equals' | 'excludes';
   value: string;
-  includes: boolean;
 }
 
 export interface GoalState {

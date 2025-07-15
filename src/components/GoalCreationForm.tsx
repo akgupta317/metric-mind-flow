@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { ArrowLeft, ChevronDown, ChevronRight, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, ChevronDown, Plus, Trash2, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,18 +21,17 @@ export const GoalCreationForm: React.FC<GoalCreationFormProps> = ({ onGoalCreate
     targetValue: 0,
     filters: [{
       id: '1',
-      field: '',
-      operator: 'includes',
-      value: '',
-      includes: true
+      operand: 'event_name',
+      operator: 'includes' as const,
+      value: ''
     }] as Filter[]
   });
 
-  const [expandedSections, setExpandedSections] = useState<string[]>(['inputs']);
   const [showVerification, setShowVerification] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [showEventTracking, setShowEventTracking] = useState(false);
   const [currentFilterId, setCurrentFilterId] = useState<string | null>(null);
+  const [eventSearchTerm, setEventSearchTerm] = useState<{ [key: string]: string }>({});
 
   // Predefined event names
   const eventNames = [
@@ -46,21 +45,30 @@ export const GoalCreationForm: React.FC<GoalCreationFormProps> = ({ onGoalCreate
     'Product Purchase'
   ];
 
-  const toggleSection = (section: string) => {
-    setExpandedSections(prev =>
-      prev.includes(section)
-        ? prev.filter(s => s !== section)
-        : [...prev, section]
-    );
-  };
+  // Available operands
+  const operands = [
+    { value: 'event_name', label: 'Event Name' },
+    { value: 'city', label: 'City' },
+    { value: 'utm_source', label: 'UTM Source' },
+    { value: 'utm_channel', label: 'UTM Channel' },
+    { value: 'utm_campaign', label: 'UTM Campaign' },
+    { value: 'page_url', label: 'Page URL' },
+    { value: 'referrer', label: 'Referrer' }
+  ];
+
+  // Available operators
+  const operators = [
+    { value: 'includes', label: 'Includes' },
+    { value: 'equals', label: 'Equals' },
+    { value: 'excludes', label: 'Excludes' }
+  ];
 
   const addFilter = () => {
     const newFilter: Filter = {
       id: Date.now().toString(),
-      field: '',
+      operand: 'event_name',
       operator: 'includes',
-      value: '',
-      includes: true
+      value: ''
     };
     setFormData(prev => ({
       ...prev,
@@ -84,23 +92,26 @@ export const GoalCreationForm: React.FC<GoalCreationFormProps> = ({ onGoalCreate
     }));
   };
 
-  const handleEventSelect = (filterId: string, eventName: string) => {
-    if (eventName === 'create_new') {
-      setCurrentFilterId(filterId);
-      setShowEventTracking(true);
-    } else {
-      updateFilter(filterId, 'field', eventName);
-      setShowEventTracking(false);
-      setCurrentFilterId(null);
-    }
+  const handleEventSearch = (filterId: string, searchTerm: string) => {
+    setEventSearchTerm(prev => ({ ...prev, [filterId]: searchTerm }));
+    updateFilter(filterId, 'value', searchTerm);
+  };
+
+  const handleCreateNewEvent = (filterId: string) => {
+    setCurrentFilterId(filterId);
+    setShowEventTracking(true);
   };
 
   const handleEventCreated = () => {
     setShowEventTracking(false);
-    if (currentFilterId) {
-      updateFilter(currentFilterId, 'field', formData.name || 'Custom Event');
-    }
     setCurrentFilterId(null);
+  };
+
+  const getFilteredEvents = (searchTerm: string) => {
+    if (!searchTerm) return eventNames;
+    return eventNames.filter(event => 
+      event.toLowerCase().includes(searchTerm.toLowerCase())
+    );
   };
 
   const handleSubmit = async () => {
@@ -117,7 +128,7 @@ export const GoalCreationForm: React.FC<GoalCreationFormProps> = ({ onGoalCreate
           assignedTo: formData.assignedTo ? [formData.assignedTo] : [],
           timeframe: formData.timeframe,
           folder: '',
-          metric: 'conversions', // Default metric
+          metric: 'conversions',
           filters: formData.filters,
           targetValue: formData.targetValue,
           uniques: Math.floor(Math.random() * 100000),
@@ -210,30 +221,6 @@ export const GoalCreationForm: React.FC<GoalCreationFormProps> = ({ onGoalCreate
                 <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
               </div>
             </div>
-
-            {/* Goal Setup Section */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium">Goal Setup</h3>
-              
-              <div className="border border-gray-800 rounded-lg">
-                <button
-                  onClick={() => toggleSection('inputs')}
-                  className="w-full flex items-center justify-between p-4 hover:bg-gray-800"
-                >
-                  <span>Inputs</span>
-                  {expandedSections.includes('inputs') ? (
-                    <ChevronDown className="w-4 h-4" />
-                  ) : (
-                    <ChevronRight className="w-4 h-4" />
-                  )}
-                </button>
-                {expandedSections.includes('inputs') && (
-                  <div className="p-4 border-t border-gray-800">
-                    <p className="text-gray-400 text-sm">Configure input settings here</p>
-                  </div>
-                )}
-              </div>
-            </div>
           </div>
         </div>
 
@@ -257,58 +244,100 @@ export const GoalCreationForm: React.FC<GoalCreationFormProps> = ({ onGoalCreate
 
               <div className="space-y-3">
                 {formData.filters.map((filter) => (
-                  <div key={filter.id} className="flex items-center gap-2 p-3 bg-gray-800 rounded-lg">
-                    <select 
-                      className="flex-1 bg-gray-700 border border-gray-600 text-white px-2 py-1 rounded text-sm"
-                      value={filter.field}
-                      onChange={(e) => handleEventSelect(filter.id, e.target.value)}
-                    >
-                      <option value="">Select event</option>
-                      {eventNames.map(event => (
-                        <option key={event} value={event}>{event}</option>
-                      ))}
-                      <option value="create_new">+ Create new event</option>
-                    </select>
-                    
-                    <div className="flex items-center gap-1">
-                      <input
-                        type="checkbox"
-                        checked={filter.includes}
-                        onChange={(e) => updateFilter(filter.id, 'includes', e.target.checked)}
-                        className="rounded"
-                      />
-                      <span className="text-xs">Includes</span>
+                  <div key={filter.id} className="space-y-2">
+                    <div className="flex items-center gap-2 p-3 bg-gray-800 rounded-lg">
+                      {/* Operand Selector */}
+                      <select 
+                        className="flex-1 bg-gray-700 border border-gray-600 text-white px-2 py-1 rounded text-sm"
+                        value={filter.operand}
+                        onChange={(e) => updateFilter(filter.id, 'operand', e.target.value)}
+                      >
+                        {operands.map(operand => (
+                          <option key={operand.value} value={operand.value}>
+                            {operand.label}
+                          </option>
+                        ))}
+                      </select>
+
+                      {/* Operator Selector */}
+                      <select 
+                        className="bg-gray-700 border border-gray-600 text-white px-2 py-1 rounded text-sm"
+                        value={filter.operator}
+                        onChange={(e) => updateFilter(filter.id, 'operator', e.target.value as Filter['operator'])}
+                      >
+                        {operators.map(operator => (
+                          <option key={operator.value} value={operator.value}>
+                            {operator.label}
+                          </option>
+                        ))}
+                      </select>
+
+                      {/* Value Input - Special handling for event_name */}
+                      {filter.operand === 'event_name' ? (
+                        <div className="flex-1 relative">
+                          <Input
+                            placeholder="Search or type event name"
+                            className="bg-gray-700 border-gray-600 text-white text-sm"
+                            value={eventSearchTerm[filter.id] || filter.value}
+                            onChange={(e) => handleEventSearch(filter.id, e.target.value)}
+                          />
+                          {eventSearchTerm[filter.id] && (
+                            <div className="absolute top-full left-0 right-0 mt-1 bg-gray-700 border border-gray-600 rounded-md shadow-lg z-10 max-h-40 overflow-y-auto">
+                              {getFilteredEvents(eventSearchTerm[filter.id]).map(event => (
+                                <button
+                                  key={event}
+                                  className="w-full text-left px-3 py-2 hover:bg-gray-600 text-sm text-white"
+                                  onClick={() => {
+                                    updateFilter(filter.id, 'value', event);
+                                    setEventSearchTerm(prev => ({ ...prev, [filter.id]: '' }));
+                                  }}
+                                >
+                                  {event}
+                                </button>
+                              ))}
+                              {getFilteredEvents(eventSearchTerm[filter.id]).length === 0 && (
+                                <button
+                                  className="w-full text-left px-3 py-2 hover:bg-gray-600 text-sm text-blue-400"
+                                  onClick={() => handleCreateNewEvent(filter.id)}
+                                >
+                                  + Create "{eventSearchTerm[filter.id]}" event
+                                </button>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <Input
+                          placeholder="Enter value"
+                          className="flex-1 bg-gray-700 border-gray-600 text-white text-sm"
+                          value={filter.value}
+                          onChange={(e) => updateFilter(filter.id, 'value', e.target.value)}
+                        />
+                      )}
+
+                      <Button
+                        onClick={() => removeFilter(filter.id)}
+                        size="sm"
+                        variant="ghost"
+                        className="text-gray-400 hover:text-red-400"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </div>
 
-                    <Input
-                      placeholder="Value"
-                      className="flex-1 bg-gray-700 border-gray-600 text-white text-sm"
-                      value={filter.value}
-                      onChange={(e) => updateFilter(filter.id, 'value', e.target.value)}
-                    />
-
-                    <Button
-                      onClick={() => removeFilter(filter.id)}
-                      size="sm"
-                      variant="ghost"
-                      className="text-gray-400 hover:text-red-400"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                    {/* Event Tracking Implementation - Only show when creating new event for this specific filter */}
+                    {showEventTracking && currentFilterId === filter.id && (
+                      <div className="ml-3 border border-gray-800 rounded-lg p-4">
+                        <EventTrackingExample 
+                          goalName={eventSearchTerm[filter.id] || formData.name}
+                          onEventCreated={handleEventCreated}
+                        />
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
             </div>
-
-            {/* Event Tracking Implementation - Only show when creating new event */}
-            {showEventTracking && currentFilterId && (
-              <div className="border border-gray-800 rounded-lg p-4">
-                <EventTrackingExample 
-                  goalName={formData.name}
-                  onEventCreated={handleEventCreated}
-                />
-              </div>
-            )}
 
             {/* Target Value */}
             <div>
