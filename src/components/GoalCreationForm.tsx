@@ -90,13 +90,17 @@ export const GoalCreationForm: React.FC<GoalCreationFormProps> = ({ onGoalCreate
       setShowEventTracking(true);
     } else {
       updateFilter(filterId, 'field', eventName);
+      setShowEventTracking(false);
+      setCurrentFilterId(null);
     }
   };
 
   const handleEventCreated = () => {
     setShowEventTracking(false);
+    if (currentFilterId) {
+      updateFilter(currentFilterId, 'field', formData.name || 'Custom Event');
+    }
     setCurrentFilterId(null);
-    // You could add the new event to the filter here
   };
 
   const handleSubmit = async () => {
@@ -133,32 +137,6 @@ export const GoalCreationForm: React.FC<GoalCreationFormProps> = ({ onGoalCreate
 
   if (showVerification) {
     return <VerificationLoader isVerifying={isVerifying} />;
-  }
-
-  if (showEventTracking) {
-    return (
-      <div className="min-h-screen bg-gray-900 text-white p-6">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-center gap-4 mb-6">
-            <Button
-              onClick={() => setShowEventTracking(false)}
-              variant="ghost"
-              size="sm"
-              className="text-gray-400 hover:text-white"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
-            </Button>
-            <h1 className="text-xl font-semibold">Create New Event</h1>
-          </div>
-          
-          <EventTrackingExample 
-            goalName={formData.name}
-            onEventCreated={handleEventCreated}
-          />
-        </div>
-      </div>
-    );
   }
 
   return (
@@ -251,26 +229,7 @@ export const GoalCreationForm: React.FC<GoalCreationFormProps> = ({ onGoalCreate
                 </button>
                 {expandedSections.includes('inputs') && (
                   <div className="p-4 border-t border-gray-800">
-                    <EventTrackingExample goalName={formData.name} />
-                  </div>
-                )}
-              </div>
-
-              <div className="border border-gray-800 rounded-lg">
-                <button
-                  onClick={() => toggleSection('alerts')}
-                  className="w-full flex items-center justify-between p-4 hover:bg-gray-800"
-                >
-                  <span>Alerts</span>
-                  {expandedSections.includes('alerts') ? (
-                    <ChevronDown className="w-4 h-4" />
-                  ) : (
-                    <ChevronRight className="w-4 h-4" />
-                  )}
-                </button>
-                {expandedSections.includes('alerts') && (
-                  <div className="p-4 border-t border-gray-800">
-                    <p className="text-gray-400 text-sm">Configure alert settings here</p>
+                    <p className="text-gray-400 text-sm">Configure input settings here</p>
                   </div>
                 )}
               </div>
@@ -340,6 +299,16 @@ export const GoalCreationForm: React.FC<GoalCreationFormProps> = ({ onGoalCreate
                 ))}
               </div>
             </div>
+
+            {/* Event Tracking Implementation - Only show when creating new event */}
+            {showEventTracking && currentFilterId && (
+              <div className="border border-gray-800 rounded-lg p-4">
+                <EventTrackingExample 
+                  goalName={formData.name}
+                  onEventCreated={handleEventCreated}
+                />
+              </div>
+            )}
 
             {/* Target Value */}
             <div>
