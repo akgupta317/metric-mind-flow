@@ -31,21 +31,21 @@ export const GoalReportTable: React.FC<GoalReportTableProps> = ({ goals, onCreat
       case 'completed':
         return 'text-blue-400';
       default:
-        return 'text-gray-400';
+        return 'text-muted-foreground';
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
-      <div className="border-b border-gray-800 px-6 py-4">
+      <div className="border-b border-border px-6 py-4">
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-semibold">Goal Conversions</h1>
           
           <div className="flex items-center gap-4">
             <Button
               onClick={onCreateGoal}
-              className="bg-blue-600 hover:bg-blue-700"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground"
             >
               <Plus className="w-4 h-4 mr-2" />
               Create Goal
@@ -55,7 +55,7 @@ export const GoalReportTable: React.FC<GoalReportTableProps> = ({ goals, onCreat
               onClick={() => setShowFilters(!showFilters)}
               variant="outline"
               size="sm"
-              className="border-gray-700 text-gray-300 hover:text-white"
+              className="border-border text-muted-foreground hover:text-foreground"
             >
               {showFilters ? (
                 <>
@@ -71,7 +71,7 @@ export const GoalReportTable: React.FC<GoalReportTableProps> = ({ goals, onCreat
             </Button>
             
             <div className="relative">
-              <select className="bg-gray-800 border border-gray-700 text-white px-3 py-1 rounded text-sm">
+              <select className="bg-card border border-border text-foreground px-3 py-1 rounded text-sm">
                 <option>Status: All</option>
                 <option>Status: Active</option>
                 <option>Status: Paused</option>
@@ -88,34 +88,34 @@ export const GoalReportTable: React.FC<GoalReportTableProps> = ({ goals, onCreat
         
         {/* Main Content */}
         <div className="flex-1 p-6">
-          <div className="bg-gray-800 rounded-lg overflow-hidden">
+          <div className="bg-card rounded-lg overflow-hidden border border-border">
             <Table>
               <TableHeader>
-                <TableRow className="border-gray-700 hover:bg-gray-700/50">
-                  <TableHead className="text-gray-300 font-medium">Goal</TableHead>
-                  <TableHead className="text-gray-300 font-medium">Uniques</TableHead>
-                  <TableHead className="text-gray-300 font-medium">Total</TableHead>
-                  <TableHead className="text-gray-300 font-medium">CR</TableHead>
-                  <TableHead className="text-gray-300 font-medium">Status</TableHead>
-                  <TableHead className="text-gray-300 font-medium">Owner</TableHead>
-                  <TableHead className="text-gray-300 font-medium">Progress</TableHead>
-                  <TableHead className="text-gray-300 font-medium"></TableHead>
+                <TableRow className="border-border hover:bg-accent/50">
+                  <TableHead className="text-muted-foreground font-medium">Goal</TableHead>
+                  <TableHead className="text-muted-foreground font-medium">Uniques</TableHead>
+                  <TableHead className="text-muted-foreground font-medium">Total</TableHead>
+                  <TableHead className="text-muted-foreground font-medium">CR</TableHead>
+                  <TableHead className="text-muted-foreground font-medium">Status</TableHead>
+                  <TableHead className="text-muted-foreground font-medium">Owner</TableHead>
+                  <TableHead className="text-muted-foreground font-medium">Progress</TableHead>
+                  <TableHead className="text-muted-foreground font-medium"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {goals.map((goal) => (
-                  <TableRow key={goal.id} className="border-gray-700 hover:bg-gray-700/30">
-                    <TableCell className="font-medium text-white">{goal.name}</TableCell>
-                    <TableCell className="text-gray-300">{formatNumber(goal.uniques)}</TableCell>
-                    <TableCell className="text-gray-300">
+                  <TableRow key={goal.id} className="border-border hover:bg-accent/30">
+                    <TableCell className="font-medium text-foreground">{goal.name}</TableCell>
+                    <TableCell className="text-muted-foreground">{formatNumber(goal.uniques)}</TableCell>
+                    <TableCell className="text-muted-foreground">
                       {goal.total ? formatNumber(goal.total) : '-'}
                     </TableCell>
-                    <TableCell className="text-gray-300">{goal.conversionRate.toFixed(2)}%</TableCell>
+                    <TableCell className="text-muted-foreground">{goal.conversionRate.toFixed(2)}%</TableCell>
                     <TableCell className={getStatusColor(goal.status)}>
                       {goal.status.charAt(0).toUpperCase() + goal.status.slice(1)}
                     </TableCell>
-                    <TableCell className="text-gray-300">{goal.owner}</TableCell>
-                    <TableCell className="text-gray-300">{goal.progress.toFixed(1)}%</TableCell>
+                    <TableCell className="text-muted-foreground">{goal.owner}</TableCell>
+                    <TableCell className="text-muted-foreground">{goal.progress.toFixed(1)}%</TableCell>
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -123,17 +123,17 @@ export const GoalReportTable: React.FC<GoalReportTableProps> = ({ goals, onCreat
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="bg-gray-800 border-gray-700">
-                          <DropdownMenuItem className="text-gray-300 hover:bg-gray-700">
+                        <DropdownMenuContent align="end" className="bg-card border-border">
+                          <DropdownMenuItem className="text-foreground hover:bg-accent">
                             View Details
                           </DropdownMenuItem>
-                          <DropdownMenuItem className="text-gray-300 hover:bg-gray-700">
+                          <DropdownMenuItem className="text-foreground hover:bg-accent">
                             Edit Goal
                           </DropdownMenuItem>
-                          <DropdownMenuItem className="text-gray-300 hover:bg-gray-700">
+                          <DropdownMenuItem className="text-foreground hover:bg-accent">
                             Duplicate
                           </DropdownMenuItem>
-                          <DropdownMenuItem className="text-red-400 hover:bg-gray-700">
+                          <DropdownMenuItem className="text-destructive hover:bg-accent">
                             Delete
                           </DropdownMenuItem>
                         </DropdownMenuContent>
