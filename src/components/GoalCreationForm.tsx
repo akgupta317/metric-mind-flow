@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { ArrowLeft, ChevronDown, Plus, Trash2, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -151,91 +150,89 @@ export const GoalCreationForm: React.FC<GoalCreationFormProps> = ({ onGoalCreate
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
-      <div className="border-b border-gray-800 px-6 py-4">
+      <div className="border-b border-border px-6 py-4">
         <div className="flex items-center gap-4">
           <Button
             onClick={onBack}
             variant="ghost"
             size="sm"
-            className="text-gray-400 hover:text-white"
+            className="text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back
           </Button>
-          <h1 className="text-xl font-semibold">Create New Goal</h1>
+          <h1 className="text-xl font-semibold text-foreground">Create New Goal</h1>
         </div>
       </div>
 
       <div className="flex">
-        {/* Left Side - Goal Details */}
-        <div className="w-1/2 p-6 border-r border-gray-800">
-          <div className="space-y-6">
-            <div>
-              <Label htmlFor="goalName" className="text-sm font-medium mb-2 block">
-                Goal name
-              </Label>
-              <Input
-                id="goalName"
-                value={formData.name}
-                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                placeholder="Enter goal name"
-                className="bg-gray-800 border-gray-700 text-white"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="assignTo" className="text-sm font-medium mb-2 block">
-                Assign to
-              </Label>
-              <div className="relative">
+        {/* Right Side - Filters and Target (now the only side) */}
+        <div className="w-full p-6">
+          <div className="max-w-2xl mx-auto space-y-6">
+            {/* Basic Goal Info */}
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="goalName" className="text-sm font-medium mb-2 block text-foreground">
+                  Goal name
+                </Label>
                 <Input
-                  id="assignTo"
-                  value={formData.assignedTo}
-                  onChange={(e) => setFormData(prev => ({ ...prev, assignedTo: e.target.value }))}
-                  placeholder="Select user"
-                  className="bg-gray-800 border-gray-700 text-white pr-10"
+                  id="goalName"
+                  value={formData.name}
+                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                  placeholder="Enter goal name"
+                  className="bg-background border-border text-foreground"
                 />
-                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              </div>
+
+              <div>
+                <Label htmlFor="assignTo" className="text-sm font-medium mb-2 block text-foreground">
+                  Assign to
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="assignTo"
+                    value={formData.assignedTo}
+                    onChange={(e) => setFormData(prev => ({ ...prev, assignedTo: e.target.value }))}
+                    placeholder="Select user"
+                    className="bg-background border-border text-foreground pr-10"
+                  />
+                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="timeframe" className="text-sm font-medium mb-2 block text-foreground">
+                  Timeframe
+                </Label>
+                <div className="relative">
+                  <select
+                    id="timeframe"
+                    value={formData.timeframe}
+                    onChange={(e) => setFormData(prev => ({ ...prev, timeframe: e.target.value }))}
+                    className="w-full bg-background border border-border text-foreground px-3 py-2 rounded-md appearance-none"
+                  >
+                    <option value="">Select timeframe</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly">Monthly</option>
+                    <option value="quarterly">Quarterly</option>
+                    <option value="yearly">Yearly</option>
+                  </select>
+                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                </div>
               </div>
             </div>
 
-            <div>
-              <Label htmlFor="timeframe" className="text-sm font-medium mb-2 block">
-                Timeframe
-              </Label>
-              <div className="relative">
-                <select
-                  id="timeframe"
-                  value={formData.timeframe}
-                  onChange={(e) => setFormData(prev => ({ ...prev, timeframe: e.target.value }))}
-                  className="w-full bg-gray-800 border border-gray-700 text-white px-3 py-2 rounded-md appearance-none"
-                >
-                  <option value="">Select timeframe</option>
-                  <option value="weekly">Weekly</option>
-                  <option value="monthly">Monthly</option>
-                  <option value="quarterly">Quarterly</option>
-                  <option value="yearly">Yearly</option>
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Side - Filters and Target */}
-        <div className="w-1/2 p-6">
-          <div className="space-y-6">
             {/* Filters Section */}
             <div>
               <div className="flex items-center justify-between mb-4">
-                <Label className="text-sm font-medium">Filters</Label>
+                <Label className="text-sm font-medium text-foreground">Filters</Label>
                 <Button
                   onClick={addFilter}
                   size="sm"
                   variant="outline"
-                  className="border-gray-700 text-gray-400 hover:text-white"
+                  className="border-border text-muted-foreground hover:text-foreground"
                 >
                   <Plus className="w-4 h-4 mr-1" />
                   Add filter
@@ -245,10 +242,10 @@ export const GoalCreationForm: React.FC<GoalCreationFormProps> = ({ onGoalCreate
               <div className="space-y-3">
                 {formData.filters.map((filter) => (
                   <div key={filter.id} className="space-y-2">
-                    <div className="flex items-center gap-2 p-3 bg-gray-800 rounded-lg">
+                    <div className="flex items-center gap-2 p-3 bg-container rounded-lg">
                       {/* Operand Selector */}
                       <select 
-                        className="flex-1 bg-gray-700 border border-gray-600 text-white px-2 py-1 rounded text-sm"
+                        className="flex-1 bg-background border border-border text-foreground px-2 py-1 rounded text-sm"
                         value={filter.operand}
                         onChange={(e) => updateFilter(filter.id, 'operand', e.target.value)}
                       >
@@ -261,7 +258,7 @@ export const GoalCreationForm: React.FC<GoalCreationFormProps> = ({ onGoalCreate
 
                       {/* Operator Selector */}
                       <select 
-                        className="bg-gray-700 border border-gray-600 text-white px-2 py-1 rounded text-sm"
+                        className="bg-background border border-border text-foreground px-2 py-1 rounded text-sm"
                         value={filter.operator}
                         onChange={(e) => updateFilter(filter.id, 'operator', e.target.value as Filter['operator'])}
                       >
@@ -277,16 +274,16 @@ export const GoalCreationForm: React.FC<GoalCreationFormProps> = ({ onGoalCreate
                         <div className="flex-1 relative">
                           <Input
                             placeholder="Search or type event name"
-                            className="bg-gray-700 border-gray-600 text-white text-sm"
+                            className="bg-background border-border text-foreground text-sm"
                             value={eventSearchTerm[filter.id] || filter.value}
                             onChange={(e) => handleEventSearch(filter.id, e.target.value)}
                           />
                           {eventSearchTerm[filter.id] && (
-                            <div className="absolute top-full left-0 right-0 mt-1 bg-gray-700 border border-gray-600 rounded-md shadow-lg z-10 max-h-40 overflow-y-auto">
+                            <div className="absolute top-full left-0 right-0 mt-1 bg-background border border-border rounded-md shadow-lg z-10 max-h-40 overflow-y-auto">
                               {getFilteredEvents(eventSearchTerm[filter.id]).map(event => (
                                 <button
                                   key={event}
-                                  className="w-full text-left px-3 py-2 hover:bg-gray-600 text-sm text-white"
+                                  className="w-full text-left px-3 py-2 hover:bg-accent text-sm text-foreground"
                                   onClick={() => {
                                     updateFilter(filter.id, 'value', event);
                                     setEventSearchTerm(prev => ({ ...prev, [filter.id]: '' }));
@@ -297,7 +294,7 @@ export const GoalCreationForm: React.FC<GoalCreationFormProps> = ({ onGoalCreate
                               ))}
                               {getFilteredEvents(eventSearchTerm[filter.id]).length === 0 && (
                                 <button
-                                  className="w-full text-left px-3 py-2 hover:bg-gray-600 text-sm text-blue-400"
+                                  className="w-full text-left px-3 py-2 hover:bg-accent text-sm text-primary"
                                   onClick={() => handleCreateNewEvent(filter.id)}
                                 >
                                   + Create "{eventSearchTerm[filter.id]}" event
@@ -309,7 +306,7 @@ export const GoalCreationForm: React.FC<GoalCreationFormProps> = ({ onGoalCreate
                       ) : (
                         <Input
                           placeholder="Enter value"
-                          className="flex-1 bg-gray-700 border-gray-600 text-white text-sm"
+                          className="flex-1 bg-background border-border text-foreground text-sm"
                           value={filter.value}
                           onChange={(e) => updateFilter(filter.id, 'value', e.target.value)}
                         />
@@ -319,7 +316,7 @@ export const GoalCreationForm: React.FC<GoalCreationFormProps> = ({ onGoalCreate
                         onClick={() => removeFilter(filter.id)}
                         size="sm"
                         variant="ghost"
-                        className="text-gray-400 hover:text-red-400"
+                        className="text-muted-foreground hover:text-destructive"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -327,7 +324,7 @@ export const GoalCreationForm: React.FC<GoalCreationFormProps> = ({ onGoalCreate
 
                     {/* Event Tracking Implementation - Only show when creating new event for this specific filter */}
                     {showEventTracking && currentFilterId === filter.id && (
-                      <div className="ml-3 border border-gray-800 rounded-lg p-4">
+                      <div className="ml-3 border border-border rounded-lg p-4 bg-container">
                         <EventTrackingExample 
                           goalName={eventSearchTerm[filter.id] || formData.name}
                           onEventCreated={handleEventCreated}
@@ -341,7 +338,7 @@ export const GoalCreationForm: React.FC<GoalCreationFormProps> = ({ onGoalCreate
 
             {/* Target Value */}
             <div>
-              <Label htmlFor="targetValue" className="text-sm font-medium mb-2 block">
+              <Label htmlFor="targetValue" className="text-sm font-medium mb-2 block text-foreground">
                 Goal total
               </Label>
               <Input
@@ -349,7 +346,7 @@ export const GoalCreationForm: React.FC<GoalCreationFormProps> = ({ onGoalCreate
                 type="number"
                 value={formData.targetValue}
                 onChange={(e) => setFormData(prev => ({ ...prev, targetValue: parseInt(e.target.value) || 0 }))}
-                className="bg-gray-800 border-gray-700 text-white"
+                className="bg-background border-border text-foreground"
                 placeholder="0"
               />
             </div>
@@ -358,7 +355,7 @@ export const GoalCreationForm: React.FC<GoalCreationFormProps> = ({ onGoalCreate
             <Button
               onClick={handleSubmit}
               disabled={!isFormValid}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-700 disabled:text-gray-400"
+              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-muted disabled:text-muted-foreground text-white"
             >
               Next
             </Button>

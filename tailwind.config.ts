@@ -63,7 +63,10 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				container: 'hsl(var(--container))'
+				container: 'hsl(var(--container))',
+				blue: {
+					600: '#2563eb'
+				}
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
