@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { ArrowLeft, ChevronDown, ChevronRight, Plus, Trash2, Loader2 } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronRight, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,15 +18,33 @@ export const GoalCreationForm: React.FC<GoalCreationFormProps> = ({ onGoalCreate
     name: '',
     assignedTo: '',
     timeframe: '',
-    folder: '',
-    metric: '',
     targetValue: 0,
-    filters: [] as Filter[]
+    filters: [{
+      id: '1',
+      field: '',
+      operator: 'includes',
+      value: '',
+      includes: true
+    }] as Filter[]
   });
 
   const [expandedSections, setExpandedSections] = useState<string[]>(['inputs']);
   const [showVerification, setShowVerification] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
+  const [showEventTracking, setShowEventTracking] = useState(false);
+  const [currentFilterId, setCurrentFilterId] = useState<string | null>(null);
+
+  // Predefined event names
+  const eventNames = [
+    'Button Click',
+    'Form Submit',
+    'Page View',
+    'Link Click',
+    'File Download',
+    'Video Play',
+    'Newsletter Signup',
+    'Product Purchase'
+  ];
 
   const toggleSection = (section: string) => {
     setExpandedSections(prev =>
@@ -57,6 +75,30 @@ export const GoalCreationForm: React.FC<GoalCreationFormProps> = ({ onGoalCreate
     }));
   };
 
+  const updateFilter = (filterId: string, field: keyof Filter, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      filters: prev.filters.map(f =>
+        f.id === filterId ? { ...f, [field]: value } : f
+      )
+    }));
+  };
+
+  const handleEventSelect = (filterId: string, eventName: string) => {
+    if (eventName === 'create_new') {
+      setCurrentFilterId(filterId);
+      setShowEventTracking(true);
+    } else {
+      updateFilter(filterId, 'field', eventName);
+    }
+  };
+
+  const handleEventCreated = () => {
+    setShowEventTracking(false);
+    setCurrentFilterId(null);
+    // You could add the new event to the filter here
+  };
+
   const handleSubmit = async () => {
     setShowVerification(true);
     setIsVerifying(true);
@@ -70,8 +112,8 @@ export const GoalCreationForm: React.FC<GoalCreationFormProps> = ({ onGoalCreate
           name: formData.name,
           assignedTo: formData.assignedTo ? [formData.assignedTo] : [],
           timeframe: formData.timeframe,
-          folder: formData.folder,
-          metric: formData.metric,
+          folder: '',
+          metric: 'conversions', // Default metric
           filters: formData.filters,
           targetValue: formData.targetValue,
           uniques: Math.floor(Math.random() * 100000),
@@ -87,10 +129,36 @@ export const GoalCreationForm: React.FC<GoalCreationFormProps> = ({ onGoalCreate
     }, 3000);
   };
 
-  const isFormValid = formData.name && formData.metric && formData.timeframe;
+  const isFormValid = formData.name && formData.timeframe;
 
   if (showVerification) {
     return <VerificationLoader isVerifying={isVerifying} />;
+  }
+
+  if (showEventTracking) {
+    return (
+      <div className="min-h-screen bg-gray-900 text-white p-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-center gap-4 mb-6">
+            <Button
+              onClick={() => setShowEventTracking(false)}
+              variant="ghost"
+              size="sm"
+              className="text-gray-400 hover:text-white"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back
+            </Button>
+            <h1 className="text-xl font-semibold">Create New Event</h1>
+          </div>
+          
+          <EventTrackingExample 
+            goalName={formData.name}
+            onEventCreated={handleEventCreated}
+          />
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -165,18 +233,6 @@ export const GoalCreationForm: React.FC<GoalCreationFormProps> = ({ onGoalCreate
               </div>
             </div>
 
-            <div>
-              <Label htmlFor="folder" className="text-sm font-medium mb-2 block">
-                Folder (optional)
-              </Label>
-              <Button
-                variant="outline"
-                className="w-full justify-start border-gray-700 text-gray-400 hover:text-white"
-              >
-                Browse
-              </Button>
-            </div>
-
             {/* Goal Setup Section */}
             <div className="space-y-4">
               <h3 className="text-lg font-medium">Goal Setup</h3>
@@ -195,7 +251,7 @@ export const GoalCreationForm: React.FC<GoalCreationFormProps> = ({ onGoalCreate
                 </button>
                 {expandedSections.includes('inputs') && (
                   <div className="p-4 border-t border-gray-800">
-                    <EventTrackingExample />
+                    <EventTrackingExample goalName={formData.name} />
                   </div>
                 )}
               </div>
@@ -222,34 +278,13 @@ export const GoalCreationForm: React.FC<GoalCreationFormProps> = ({ onGoalCreate
           </div>
         </div>
 
-        {/* Right Side - Metric Configuration */}
+        {/* Right Side - Filters and Target */}
         <div className="w-1/2 p-6">
           <div className="space-y-6">
-            <div>
-              <Label htmlFor="metric" className="text-sm font-medium mb-2 block">
-                Metric
-              </Label>
-              <div className="relative">
-                <select
-                  id="metric"
-                  value={formData.metric}
-                  onChange={(e) => setFormData(prev => ({ ...prev, metric: e.target.value }))}
-                  className="w-full bg-gray-800 border border-gray-700 text-white px-3 py-2 rounded-md appearance-none"
-                >
-                  <option value="">Select what you want to measure</option>
-                  <option value="pageviews">Pageviews</option>
-                  <option value="unique_visitors">Unique Visitors</option>
-                  <option value="conversions">Conversions</option>
-                  <option value="revenue">Revenue</option>
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-              </div>
-            </div>
-
             {/* Filters Section */}
             <div>
               <div className="flex items-center justify-between mb-4">
-                <Label className="text-sm font-medium">Filters (optional)</Label>
+                <Label className="text-sm font-medium">Filters</Label>
                 <Button
                   onClick={addFilter}
                   size="sm"
@@ -264,25 +299,23 @@ export const GoalCreationForm: React.FC<GoalCreationFormProps> = ({ onGoalCreate
               <div className="space-y-3">
                 {formData.filters.map((filter) => (
                   <div key={filter.id} className="flex items-center gap-2 p-3 bg-gray-800 rounded-lg">
-                    <select className="flex-1 bg-gray-700 border border-gray-600 text-white px-2 py-1 rounded text-sm">
-                      <option>Select field</option>
-                      <option>Page</option>
-                      <option>Referrer</option>
-                      <option>Country</option>
+                    <select 
+                      className="flex-1 bg-gray-700 border border-gray-600 text-white px-2 py-1 rounded text-sm"
+                      value={filter.field}
+                      onChange={(e) => handleEventSelect(filter.id, e.target.value)}
+                    >
+                      <option value="">Select event</option>
+                      {eventNames.map(event => (
+                        <option key={event} value={event}>{event}</option>
+                      ))}
+                      <option value="create_new">+ Create new event</option>
                     </select>
                     
                     <div className="flex items-center gap-1">
                       <input
                         type="checkbox"
                         checked={filter.includes}
-                        onChange={(e) => {
-                          setFormData(prev => ({
-                            ...prev,
-                            filters: prev.filters.map(f =>
-                              f.id === filter.id ? { ...f, includes: e.target.checked } : f
-                            )
-                          }));
-                        }}
+                        onChange={(e) => updateFilter(filter.id, 'includes', e.target.checked)}
                         className="rounded"
                       />
                       <span className="text-xs">Includes</span>
@@ -292,14 +325,7 @@ export const GoalCreationForm: React.FC<GoalCreationFormProps> = ({ onGoalCreate
                       placeholder="Value"
                       className="flex-1 bg-gray-700 border-gray-600 text-white text-sm"
                       value={filter.value}
-                      onChange={(e) => {
-                        setFormData(prev => ({
-                          ...prev,
-                          filters: prev.filters.map(f =>
-                            f.id === filter.id ? { ...f, value: e.target.value } : f
-                          )
-                        }));
-                      }}
+                      onChange={(e) => updateFilter(filter.id, 'value', e.target.value)}
                     />
 
                     <Button
@@ -328,14 +354,6 @@ export const GoalCreationForm: React.FC<GoalCreationFormProps> = ({ onGoalCreate
                 className="bg-gray-800 border-gray-700 text-white"
                 placeholder="0"
               />
-            </div>
-
-            {/* Historic Data */}
-            <div>
-              <Label className="text-sm font-medium mb-2 block">Historic Data</Label>
-              <div className="p-4 bg-gray-800 rounded-lg text-center text-gray-400">
-                -
-              </div>
             </div>
 
             {/* Submit Button */}

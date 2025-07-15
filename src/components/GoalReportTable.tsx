@@ -1,107 +1,18 @@
 
 import React, { useState } from 'react';
-import { ChevronDown, Filter, MoreHorizontal, TrendingUp, TrendingDown } from 'lucide-react';
+import { MoreHorizontal, Filter, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Goal } from '@/types/goal';
+import { FilterSidebar } from './FilterSidebar';
 
 interface GoalReportTableProps {
   goals: Goal[];
 }
 
 export const GoalReportTable: React.FC<GoalReportTableProps> = ({ goals }) => {
-  const [sortField, setSortField] = useState<string>('');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
-
-  // Sample data for demonstration
-  const sampleGoals: Goal[] = [
-    {
-      id: '1',
-      name: 'Scroll to Goals',
-      uniques: 95700,
-      total: undefined,
-      conversionRate: 37.44,
-      assignedTo: ['John Doe'],
-      timeframe: 'monthly',
-      metric: 'pageviews',
-      filters: [],
-      targetValue: 100000,
-      status: 'active',
-      lastUpdated: '2024-01-15',
-      owner: 'Marketing Team',
-      progress: 95.7,
-      folder: 'Q1 Goals'
-    },
-    {
-      id: '2',
-      name: 'Deep scroll - homepage',
-      uniques: 14100,
-      total: undefined,
-      conversionRate: 5.55,
-      assignedTo: ['Jane Smith'],
-      timeframe: 'weekly',
-      metric: 'unique_visitors',
-      filters: [],
-      targetValue: 15000,
-      status: 'active',
-      lastUpdated: '2024-01-14',
-      owner: 'Product Team',
-      progress: 94.0,
-      folder: 'Homepage'
-    },
-    {
-      id: '3',
-      name: 'Visit /register',
-      uniques: 5900,
-      total: 7500,
-      conversionRate: 2.34,
-      assignedTo: ['Mike Johnson'],
-      timeframe: 'monthly',
-      metric: 'conversions',
-      filters: [],
-      targetValue: 8000,
-      status: 'active',
-      lastUpdated: '2024-01-13',
-      owner: 'Growth Team',
-      progress: 73.8,
-      folder: 'Conversion'
-    },
-    {
-      id: '4',
-      name: 'Add a site',
-      uniques: 4000,
-      total: 5500,
-      conversionRate: 1.59,
-      assignedTo: ['Sarah Wilson'],
-      timeframe: 'weekly',
-      metric: 'conversions',
-      filters: [],
-      targetValue: 6000,
-      status: 'active',
-      lastUpdated: '2024-01-12',
-      owner: 'Product Team',
-      progress: 66.7,
-      folder: 'Onboarding'
-    },
-    {
-      id: '5',
-      name: 'Visit /blog*',
-      uniques: 3100,
-      total: 4400,
-      conversionRate: 1.22,
-      assignedTo: ['Tom Brown'],
-      timeframe: 'monthly',
-      metric: 'pageviews',
-      filters: [],
-      targetValue: 5000,
-      status: 'active',
-      lastUpdated: '2024-01-11',
-      owner: 'Content Team',
-      progress: 62.0,
-      folder: 'Content'
-    }
-  ];
-
-  const displayGoals = goals.length > 0 ? goals : sampleGoals;
+  const [showFilters, setShowFilters] = useState(false);
 
   const formatNumber = (num: number) => {
     if (num >= 1000) {
@@ -110,121 +21,126 @@ export const GoalReportTable: React.FC<GoalReportTableProps> = ({ goals }) => {
     return num.toString();
   };
 
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active':
+        return 'text-green-400';
+      case 'paused':
+        return 'text-yellow-400';
+      case 'completed':
+        return 'text-blue-400';
+      default:
+        return 'text-gray-400';
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-900 text-white">
       {/* Header */}
       <div className="border-b border-gray-800 px-6 py-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-6">
             <h1 className="text-xl font-semibold">Goal Conversions</h1>
-            <div className="flex border border-gray-700 rounded-lg">
-              <button className="px-4 py-2 bg-blue-600 text-white rounded-l-lg text-sm font-medium">
-                Goals
-              </button>
-              <button className="px-4 py-2 text-gray-400 hover:text-white text-sm">
-                Properties
-              </button>
-              <button className="px-4 py-2 text-gray-400 hover:text-white rounded-r-lg text-sm">
-                Funnels
-              </button>
+            <div className="flex gap-1 text-sm">
+              <button className="px-3 py-1 bg-gray-800 rounded text-white">Goals</button>
+              <button className="px-3 py-1 text-gray-400 hover:text-white">Properties</button>
+              <button className="px-3 py-1 text-gray-400 hover:text-white">Funnels</button>
             </div>
           </div>
+          
           <div className="flex items-center gap-4">
-            <button className="flex items-center gap-2 px-3 py-2 text-gray-400 hover:text-white text-sm">
-              <Filter className="w-4 h-4" />
-              Hide Filters
-            </button>
-            <div className="flex items-center gap-2 px-3 py-2 border border-gray-700 rounded-lg">
-              <span className="text-sm">Status</span>
-              <ChevronDown className="w-4 h-4" />
+            <Button
+              onClick={() => setShowFilters(!showFilters)}
+              variant="outline"
+              size="sm"
+              className="border-gray-700 text-gray-300 hover:text-white"
+            >
+              {showFilters ? (
+                <>
+                  <X className="w-4 h-4 mr-2" />
+                  Hide Filters
+                </>
+              ) : (
+                <>
+                  <Filter className="w-4 h-4 mr-2" />
+                  Show Filters
+                </>
+              )}
+            </Button>
+            
+            <div className="relative">
+              <select className="bg-gray-800 border border-gray-700 text-white px-3 py-1 rounded text-sm">
+                <option>Status: All</option>
+                <option>Status: Active</option>
+                <option>Status: Paused</option>
+                <option>Status: Completed</option>
+              </select>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Table */}
-      <div className="p-6">
-        <div className="bg-gray-800 rounded-lg overflow-hidden">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-700">
-                <th className="text-left p-4 font-medium text-gray-300">Goal</th>
-                <th className="text-right p-4 font-medium text-gray-300">Uniques</th>
-                <th className="text-right p-4 font-medium text-gray-300">Total</th>
-                <th className="text-right p-4 font-medium text-gray-300">CR</th>
-                <th className="text-right p-4 font-medium text-gray-300">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {displayGoals.map((goal, index) => (
-                <tr
-                  key={goal.id}
-                  className={`border-b border-gray-700 hover:bg-gray-750 transition-colors ${
-                    index === 0 ? 'bg-gray-750' : ''
-                  }`}
-                >
-                  <td className="p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-2 h-8 bg-blue-500 rounded-full"></div>
-                      <span className="font-medium">{goal.name}</span>
-                    </div>
-                  </td>
-                  <td className="p-4 text-right font-mono">{formatNumber(goal.uniques)}</td>
-                  <td className="p-4 text-right font-mono">
-                    {goal.total ? formatNumber(goal.total) : '-'}
-                  </td>
-                  <td className="p-4 text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      {goal.conversionRate > 0 ? (
-                        <TrendingUp className="w-4 h-4 text-green-500" />
-                      ) : (
-                        <TrendingDown className="w-4 h-4 text-red-500" />
-                      )}
-                      <span className={`font-mono ${
-                        goal.conversionRate > 0 ? 'text-green-500' : 'text-red-500'
-                      }`}>
-                        {goal.conversionRate > 0 ? '+' : ''}{goal.conversionRate.toFixed(2)}%
-                      </span>
-                    </div>
-                  </td>
-                  <td className="p-4 text-right">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="border-gray-600 text-gray-400 hover:text-white text-xs"
-                    >
-                      DETAILS
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Summary Stats */}
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="bg-gray-800 p-4 rounded-lg">
-            <div className="text-sm text-gray-400">Total Goals</div>
-            <div className="text-2xl font-bold">{displayGoals.length}</div>
-          </div>
-          <div className="bg-gray-800 p-4 rounded-lg">
-            <div className="text-sm text-gray-400">Active Goals</div>
-            <div className="text-2xl font-bold text-green-500">
-              {displayGoals.filter(g => g.status === 'active').length}
-            </div>
-          </div>
-          <div className="bg-gray-800 p-4 rounded-lg">
-            <div className="text-sm text-gray-400">Avg. Conversion Rate</div>
-            <div className="text-2xl font-bold">
-              {(displayGoals.reduce((sum, goal) => sum + Math.abs(goal.conversionRate), 0) / displayGoals.length).toFixed(2)}%
-            </div>
-          </div>
-          <div className="bg-gray-800 p-4 rounded-lg">
-            <div className="text-sm text-gray-400">Total Uniques</div>
-            <div className="text-2xl font-bold">
-              {formatNumber(displayGoals.reduce((sum, goal) => sum + goal.uniques, 0))}
-            </div>
+      <div className="flex">
+        {/* Filter Sidebar */}
+        {showFilters && <FilterSidebar />}
+        
+        {/* Main Content */}
+        <div className="flex-1 p-6">
+          <div className="bg-gray-800 rounded-lg overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-gray-700 hover:bg-gray-700/50">
+                  <TableHead className="text-gray-300 font-medium">Goal</TableHead>
+                  <TableHead className="text-gray-300 font-medium">Uniques</TableHead>
+                  <TableHead className="text-gray-300 font-medium">Total</TableHead>
+                  <TableHead className="text-gray-300 font-medium">CR</TableHead>
+                  <TableHead className="text-gray-300 font-medium">Status</TableHead>
+                  <TableHead className="text-gray-300 font-medium">Owner</TableHead>
+                  <TableHead className="text-gray-300 font-medium">Progress</TableHead>
+                  <TableHead className="text-gray-300 font-medium"></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {goals.map((goal) => (
+                  <TableRow key={goal.id} className="border-gray-700 hover:bg-gray-700/30">
+                    <TableCell className="font-medium text-white">{goal.name}</TableCell>
+                    <TableCell className="text-gray-300">{formatNumber(goal.uniques)}</TableCell>
+                    <TableCell className="text-gray-300">
+                      {goal.total ? formatNumber(goal.total) : '-'}
+                    </TableCell>
+                    <TableCell className="text-gray-300">{goal.conversionRate.toFixed(2)}%</TableCell>
+                    <TableCell className={getStatusColor(goal.status)}>
+                      {goal.status.charAt(0).toUpperCase() + goal.status.slice(1)}
+                    </TableCell>
+                    <TableCell className="text-gray-300">{goal.owner}</TableCell>
+                    <TableCell className="text-gray-300">{goal.progress.toFixed(1)}%</TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="bg-gray-800 border-gray-700">
+                          <DropdownMenuItem className="text-gray-300 hover:bg-gray-700">
+                            View Details
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="text-gray-300 hover:bg-gray-700">
+                            Edit Goal
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="text-gray-300 hover:bg-gray-700">
+                            Duplicate
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="text-red-400 hover:bg-gray-700">
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </div>
         </div>
       </div>
