@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
-import { ArrowLeft, ChevronDown, Plus, Trash2, Search, User, Users, Calendar, Target } from 'lucide-react';
+import { ArrowLeft, ChevronDown, Plus, Trash2, Search, User, Users, Calendar, Target, CheckCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Goal, Filter } from '@/types/goal';
 import { ImprovedEventTracking } from './ImprovedEventTracking';
-import { VerificationLoader } from './VerificationLoader';
 
 interface GoalCreationFormProps {
   onGoalCreated: (goal: Goal) => void;
@@ -26,8 +25,8 @@ export const GoalCreationForm: React.FC<GoalCreationFormProps> = ({ onGoalCreate
     }] as Filter[]
   });
 
-  const [showVerification, setShowVerification] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
+  const [isVerificationComplete, setIsVerificationComplete] = useState(false);
   const [showEventTracking, setShowEventTracking] = useState(false);
   const [currentFilterId, setCurrentFilterId] = useState<string | null>(null);
   const [eventSearchTerm, setEventSearchTerm] = useState<{ [key: string]: string }>({});
@@ -133,12 +132,14 @@ export const GoalCreationForm: React.FC<GoalCreationFormProps> = ({ onGoalCreate
   };
 
   const handleSubmit = async () => {
-    setShowVerification(true);
     setIsVerifying(true);
     
     // Simulate verification process
     setTimeout(() => {
       setIsVerifying(false);
+      setIsVerificationComplete(true);
+      
+      // After showing success, create goal and redirect
       setTimeout(() => {
         const newGoal: Goal = {
           id: Date.now().toString(),
@@ -158,15 +159,11 @@ export const GoalCreationForm: React.FC<GoalCreationFormProps> = ({ onGoalCreate
           progress: Math.random() * 100
         };
         onGoalCreated(newGoal);
-      }, 1000);
+      }, 2000);
     }, 3000);
   };
 
   const isFormValid = formData.name && formData.timeframe;
-
-  if (showVerification) {
-    return <VerificationLoader isVerifying={isVerifying} />;
-  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -187,8 +184,43 @@ export const GoalCreationForm: React.FC<GoalCreationFormProps> = ({ onGoalCreate
       </div>
 
       <div className="flex justify-center p-6">
-        <div className="w-full max-w-2xl">
+        {/* Increased container width by 200px (from max-w-2xl to max-w-4xl) */}
+        <div className="w-full max-w-4xl">
           <div className="bg-gray-50 rounded-lg p-8 space-y-8">
+            {/* Verification States */}
+            {(isVerifying || isVerificationComplete) && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+                <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4 text-center">
+                  <div className="w-16 h-16 mx-auto mb-6">
+                    {isVerifying ? (
+                      <Loader2 className="w-16 h-16 text-blue-600 animate-spin" />
+                    ) : (
+                      <CheckCircle className="w-16 h-16 text-green-600" />
+                    )}
+                  </div>
+
+                  <h2 className="text-2xl font-semibold mb-2 text-gray-900">
+                    {isVerifying ? 'Verifying Events' : 'Verification Complete'}
+                  </h2>
+                  
+                  <p className="text-gray-600 mb-8">
+                    {isVerifying 
+                      ? 'Verifying events are being sent and received...'
+                      : 'Events are being tracked successfully! Redirecting to dashboard...'
+                    }
+                  </p>
+
+                  {isVerifying && (
+                    <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
+                      <div className="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></div>
+                      <div className="w-2 h-2 bg-blue-600 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
+                      <div className="w-2 h-2 bg-blue-600 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Basic Goal Info */}
             <div className="space-y-6">
               <div>
@@ -408,10 +440,10 @@ export const GoalCreationForm: React.FC<GoalCreationFormProps> = ({ onGoalCreate
             {/* Submit Button */}
             <Button
               onClick={handleSubmit}
-              disabled={!isFormValid}
+              disabled={!isFormValid || isVerifying}
               className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:text-gray-500 text-white py-3"
             >
-              Create Goal
+              {isVerifying ? 'Creating Goal...' : 'Create Goal'}
             </Button>
           </div>
         </div>
