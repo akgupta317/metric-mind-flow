@@ -1,9 +1,8 @@
 
 import React, { useState } from 'react';
-import { MoreHorizontal, ArrowUpDown, ArrowUp, ArrowDown, Info, Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Table, Dropdown, Button, Modal, Progress, Tag, Tooltip, message } from 'antd';
+import { MoreOutlined, InfoCircleOutlined, ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
+import { Plus } from 'lucide-react';
 import { Goal } from '@/types/goal';
 
 interface ImprovedGoalTableProps {
@@ -15,9 +14,6 @@ interface ImprovedGoalTableProps {
   onDeleteGoal?: (goal: Goal) => void;
 }
 
-type SortField = 'name' | 'uniques' | 'total' | 'conversionRate' | 'progress';
-type SortDirection = 'asc' | 'desc' | null;
-
 export const ImprovedGoalTable: React.FC<ImprovedGoalTableProps> = ({ 
   goals, 
   onCreateGoal,
@@ -26,40 +22,40 @@ export const ImprovedGoalTable: React.FC<ImprovedGoalTableProps> = ({
   onDuplicateGoal,
   onDeleteGoal
 }) => {
-  const [sortField, setSortField] = useState<SortField | null>(null);
-  const [sortDirection, setSortDirection] = useState<SortDirection>(null);
+  const [messageApi, contextHolder] = message.useMessage();
 
-  const handleSort = (field: SortField) => {
-    if (sortField === field) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : sortDirection === 'desc' ? null : 'asc');
-      if (sortDirection === 'desc') {
-        setSortField(null);
-      }
-    } else {
-      setSortField(field);
-      setSortDirection('asc');
-    }
+  const handleViewDetails = (goal: Goal) => {
+    console.log('View details for:', goal.name);
+    onViewDetails?.(goal);
+    messageApi.info(`Viewing details for ${goal.name}`);
   };
 
-  const sortedGoals = React.useMemo(() => {
-    if (!sortField || !sortDirection) return goals;
+  const handleEditGoal = (goal: Goal) => {
+    console.log('Edit goal:', goal.name);
+    onEditGoal?.(goal);
+    messageApi.info(`Editing ${goal.name}`);
+  };
 
-    return [...goals].sort((a, b) => {
-      let aVal = a[sortField];
-      let bVal = b[sortField];
+  const handleDuplicateGoal = (goal: Goal) => {
+    console.log('Duplicate goal:', goal.name);
+    onDuplicateGoal?.(goal);
+    messageApi.success(`Successfully duplicated ${goal.name}`);
+  };
 
-      if (typeof aVal === 'string') {
-        aVal = aVal.toLowerCase();
-        bVal = (bVal as string).toLowerCase();
-      }
-
-      if (sortDirection === 'asc') {
-        return aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
-      } else {
-        return aVal > bVal ? -1 : aVal < bVal ? 1 : 0;
-      }
+  const handleDeleteGoal = (goal: Goal) => {
+    Modal.confirm({
+      title: 'Delete Goal',
+      content: `Are you sure you want to delete "${goal.name}"? This action cannot be undone.`,
+      okText: 'Delete',
+      okType: 'danger',
+      cancelText: 'Cancel',
+      onOk() {
+        console.log('Delete goal:', goal.name);
+        onDeleteGoal?.(goal);
+        messageApi.success(`Successfully deleted ${goal.name}`);
+      },
     });
-  }, [goals, sortField, sortDirection]);
+  };
 
   const formatNumber = (num: number) => {
     if (num >= 1000) {
@@ -71,175 +67,203 @@ export const ImprovedGoalTable: React.FC<ImprovedGoalTableProps> = ({
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active':
-        return 'text-green-600 bg-green-50';
+        return 'green';
       case 'paused':
-        return 'text-yellow-600 bg-yellow-50';
+        return 'orange';
       case 'completed':
-        return 'text-blue-600 bg-blue-50';
+        return 'blue';
       default:
-        return 'text-gray-600 bg-gray-50';
+        return 'default';
     }
   };
 
-  const SortButton = ({ field, children }: { field: SortField; children: React.ReactNode }) => {
-    const isActive = sortField === field;
-    
-    return (
-      <button
-        onClick={() => handleSort(field)}
-        className="flex items-center gap-1 hover:text-gray-900 transition-colors"
-      >
-        {children}
-        {isActive ? (
-          sortDirection === 'asc' ? (
-            <ArrowUp className="w-4 h-4" />
-          ) : (
-            <ArrowDown className="w-4 h-4" />
-          )
-        ) : (
-          <ArrowUpDown className="w-4 h-4 opacity-50" />
-        )}
-      </button>
-    );
-  };
+  const getMenuItems = (goal: Goal) => [
+    {
+      key: 'view',
+      label: 'View Details',
+      onClick: () => handleViewDetails(goal),
+    },
+    {
+      key: 'edit',
+      label: 'Edit Goal',
+      onClick: () => handleEditGoal(goal),
+    },
+    {
+      key: 'duplicate',
+      label: 'Duplicate',
+      onClick: () => handleDuplicateGoal(goal),
+    },
+    {
+      type: 'divider' as const,
+    },
+    {
+      key: 'delete',
+      label: 'Delete',
+      danger: true,
+      onClick: () => handleDeleteGoal(goal),
+    },
+  ];
 
-  const InfoTooltip = ({ text }: { text: string }) => (
-    <div className="group relative inline-block">
-      <Info className="w-4 h-4 text-gray-400 cursor-help" />
-      <div className="invisible group-hover:visible absolute z-10 w-64 p-2 mt-1 text-xs text-white bg-gray-900 rounded shadow-lg -translate-x-1/2 left-1/2">
-        {text}
+  const columns = [
+    {
+      title: (
+        <div className="flex items-center gap-2">
+          Goal
+          <Tooltip title="The name and description of your conversion goal">
+            <InfoCircleOutlined className="text-gray-400" />
+          </Tooltip>
+        </div>
+      ),
+      dataIndex: 'name',
+      key: 'name',
+      sorter: (a: Goal, b: Goal) => a.name.localeCompare(b.name),
+      render: (text: string) => <span className="font-medium text-gray-900">{text}</span>,
+    },
+    {
+      title: (
+        <div className="flex items-center gap-2">
+          Uniques
+          <Tooltip title="Number of unique visitors who could potentially convert">
+            <InfoCircleOutlined className="text-gray-400" />
+          </Tooltip>
+        </div>
+      ),
+      dataIndex: 'uniques',
+      key: 'uniques',
+      sorter: (a: Goal, b: Goal) => a.uniques - b.uniques,
+      render: (value: number) => <span className="text-gray-600">{formatNumber(value)}</span>,
+    },
+    {
+      title: (
+        <div className="flex items-center gap-2">
+          Total
+          <Tooltip title="Total number of visits including returning visitors">
+            <InfoCircleOutlined className="text-gray-400" />
+          </Tooltip>
+        </div>
+      ),
+      dataIndex: 'total',
+      key: 'total',
+      sorter: (a: Goal, b: Goal) => (a.total || 0) - (b.total || 0),
+      render: (value: number) => <span className="text-gray-600">{value ? formatNumber(value) : '-'}</span>,
+    },
+    {
+      title: (
+        <div className="flex items-center gap-2">
+          CR
+          <Tooltip title="Conversion rate - percentage of visitors who completed the goal">
+            <InfoCircleOutlined className="text-gray-400" />
+          </Tooltip>
+        </div>
+      ),
+      dataIndex: 'conversionRate',
+      key: 'conversionRate',
+      sorter: (a: Goal, b: Goal) => a.conversionRate - b.conversionRate,
+      render: (value: number) => <span className="text-gray-600">{value.toFixed(2)}%</span>,
+    },
+    {
+      title: (
+        <div className="flex items-center gap-2">
+          Status
+          <Tooltip title="Current status of the goal tracking">
+            <InfoCircleOutlined className="text-gray-400" />
+          </Tooltip>
+        </div>
+      ),
+      dataIndex: 'status',
+      key: 'status',
+      render: (status: string) => (
+        <Tag color={getStatusColor(status)}>
+          {status.charAt(0).toUpperCase() + status.slice(1)}
+        </Tag>
+      ),
+    },
+    {
+      title: (
+        <div className="flex items-center gap-2">
+          Owner
+          <Tooltip title="Person responsible for this goal">
+            <InfoCircleOutlined className="text-gray-400" />
+          </Tooltip>
+        </div>
+      ),
+      dataIndex: 'owner',
+      key: 'owner',
+      render: (text: string) => <span className="text-gray-600">{text}</span>,
+    },
+    {
+      title: (
+        <div className="flex items-center gap-2">
+          Progress
+          <Tooltip title="Progress towards the target goal value">
+            <InfoCircleOutlined className="text-gray-400" />
+          </Tooltip>
+        </div>
+      ),
+      dataIndex: 'progress',
+      key: 'progress',
+      sorter: (a: Goal, b: Goal) => a.progress - b.progress,
+      render: (progress: number) => (
+        <div className="flex items-center gap-2">
+          <Progress 
+            percent={Math.min(progress, 100)} 
+            size="small" 
+            className="flex-1"
+            strokeColor="#2563eb"
+          />
+          <span className="text-sm text-gray-600">{progress.toFixed(1)}%</span>
+        </div>
+      ),
+    },
+    {
+      title: '',
+      key: 'actions',
+      width: 50,
+      render: (_: any, goal: Goal) => (
+        <Dropdown
+          menu={{ items: getMenuItems(goal) }}
+          trigger={['click']}
+          placement="bottomRight"
+        >
+          <Button
+            type="text"
+            icon={<MoreOutlined />}
+            className="hover:bg-gray-100"
+          />
+        </Dropdown>
+      ),
+    },
+  ];
+
+  if (goals.length === 0) {
+    return (
+      <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
+        <p className="text-gray-500 mb-4">No goals match your current filters</p>
+        <Button
+          type="primary"
+          icon={<Plus />}
+          onClick={onCreateGoal}
+          className="bg-blue-600 hover:bg-blue-700 border-blue-600"
+        >
+          Create Goal
+        </Button>
       </div>
-    </div>
-  );
+    );
+  }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-      <Table>
-        <TableHeader className="bg-gray-50">
-          <TableRow className="border-gray-200">
-            <TableHead className="text-gray-700 font-medium">
-              <div className="flex items-center gap-2">
-                <SortButton field="name">Goal</SortButton>
-                <InfoTooltip text="The name and description of your conversion goal" />
-              </div>
-            </TableHead>
-            <TableHead className="text-gray-700 font-medium">
-              <div className="flex items-center gap-2">
-                <SortButton field="uniques">Uniques</SortButton>
-                <InfoTooltip text="Number of unique visitors who could potentially convert" />
-              </div>
-            </TableHead>
-            <TableHead className="text-gray-700 font-medium">
-              <div className="flex items-center gap-2">
-                <SortButton field="total">Total</SortButton>
-                <InfoTooltip text="Total number of visits including returning visitors" />
-              </div>
-            </TableHead>
-            <TableHead className="text-gray-700 font-medium">
-              <div className="flex items-center gap-2">
-                <SortButton field="conversionRate">CR</SortButton>
-                <InfoTooltip text="Conversion rate - percentage of visitors who completed the goal" />
-              </div>
-            </TableHead>
-            <TableHead className="text-gray-700 font-medium">
-              <div className="flex items-center gap-2">
-                Status
-                <InfoTooltip text="Current status of the goal tracking" />
-              </div>
-            </TableHead>
-            <TableHead className="text-gray-700 font-medium">
-              <div className="flex items-center gap-2">
-                Owner
-                <InfoTooltip text="Person responsible for this goal" />
-              </div>
-            </TableHead>
-            <TableHead className="text-gray-700 font-medium">
-              <div className="flex items-center gap-2">
-                <SortButton field="progress">Progress</SortButton>
-                <InfoTooltip text="Progress towards the target goal value" />
-              </div>
-            </TableHead>
-            <TableHead className="text-gray-700 font-medium"></TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {sortedGoals.map((goal) => (
-            <TableRow key={goal.id} className="border-gray-200 hover:bg-gray-50 transition-colors">
-              <TableCell className="font-medium text-gray-900">{goal.name}</TableCell>
-              <TableCell className="text-gray-600">{formatNumber(goal.uniques)}</TableCell>
-              <TableCell className="text-gray-600">
-                {goal.total ? formatNumber(goal.total) : '-'}
-              </TableCell>
-              <TableCell className="text-gray-600">{goal.conversionRate.toFixed(2)}%</TableCell>
-              <TableCell>
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(goal.status)}`}>
-                  {goal.status.charAt(0).toUpperCase() + goal.status.slice(1)}
-                </span>
-              </TableCell>
-              <TableCell className="text-gray-600">{goal.owner}</TableCell>
-              <TableCell className="text-gray-600">
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 bg-gray-200 rounded-full h-2">
-                    <div 
-                      className="bg-blue-600 h-2 rounded-full transition-all"
-                      style={{ width: `${Math.min(goal.progress, 100)}%` }}
-                    ></div>
-                  </div>
-                  <span className="text-sm">{goal.progress.toFixed(1)}%</span>
-                </div>
-              </TableCell>
-              <TableCell>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-gray-100">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="bg-white border-gray-200">
-                    <DropdownMenuItem 
-                      className="text-gray-700 hover:bg-gray-50 cursor-pointer"
-                      onClick={() => onViewDetails?.(goal)}
-                    >
-                      View Details
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      className="text-gray-700 hover:bg-gray-50 cursor-pointer"
-                      onClick={() => onEditGoal?.(goal)}
-                    >
-                      Edit Goal
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      className="text-gray-700 hover:bg-gray-50 cursor-pointer"
-                      onClick={() => onDuplicateGoal?.(goal)}
-                    >
-                      Duplicate
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      className="text-red-600 hover:bg-red-50 cursor-pointer"
-                      onClick={() => onDeleteGoal?.(goal)}
-                    >
-                      Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-      
-      {sortedGoals.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-gray-500 mb-4">No goals match your current filters</p>
-          <Button
-            onClick={onCreateGoal}
-            className="bg-blue-600 hover:bg-blue-700 text-white"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Create Goal
-          </Button>
-        </div>
-      )}
-    </div>
+    <>
+      {contextHolder}
+      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <Table
+          columns={columns}
+          dataSource={goals}
+          rowKey="id"
+          pagination={false}
+          className="goal-table"
+          rowClassName="hover:bg-gray-50"
+        />
+      </div>
+    </>
   );
 };

@@ -136,16 +136,14 @@ export const GoalAnalyticsPage = () => {
 
   const handleDeleteGoal = (goal: Goal) => {
     console.log('Delete goal:', goal.name);
-    if (confirm(`Are you sure you want to delete "${goal.name}"?`)) {
-      if (isDemoMode) {
-        setFilteredGoals(prev => prev.filter(g => g.id !== goal.id));
-      } else {
-        setState(prev => ({
-          ...prev,
-          goals: prev.goals.filter(g => g.id !== goal.id),
-          hasGoals: prev.goals.length > 1
-        }));
-      }
+    if (isDemoMode) {
+      setFilteredGoals(prev => prev.filter(g => g.id !== goal.id));
+    } else {
+      setState(prev => ({
+        ...prev,
+        goals: prev.goals.filter(g => g.id !== goal.id),
+        hasGoals: prev.goals.length > 1
+      }));
     }
   };
 
@@ -162,13 +160,12 @@ export const GoalAnalyticsPage = () => {
     return (
       <>
         <EmptyGoalsState onCreateGoal={handleCreateGoal} />
-        {showNoGoalsModal && (
-          <NoGoalsModal
-            onCreateGoal={handleCreateGoal}
-            onTryDemo={handleTryDemo}
-            onClose={() => setShowNoGoalsModal(false)}
-          />
-        )}
+        <NoGoalsModal
+          open={showNoGoalsModal}
+          onCreateGoal={handleCreateGoal}
+          onTryDemo={handleTryDemo}
+          onClose={() => setShowNoGoalsModal(false)}
+        />
       </>
     );
   }
