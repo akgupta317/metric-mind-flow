@@ -2,6 +2,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ImprovedGoalTable } from '../ImprovedGoalTable';
 import { Goal } from '@/types/goal';
+import { vi } from 'vitest';
 
 const mockGoals: Goal[] = [
   {
@@ -26,15 +27,15 @@ const mockGoals: Goal[] = [
 describe('ImprovedGoalTable', () => {
   const mockProps = {
     goals: mockGoals,
-    onCreateGoal: jest.fn(),
-    onViewDetails: jest.fn(),
-    onEditGoal: jest.fn(),
-    onDuplicateGoal: jest.fn(),
-    onDeleteGoal: jest.fn(),
+    onCreateGoal: vi.fn(),
+    onViewDetails: vi.fn(),
+    onEditGoal: vi.fn(),
+    onDuplicateGoal: vi.fn(),
+    onDeleteGoal: vi.fn(),
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('renders goal table with data', () => {

@@ -1,17 +1,18 @@
 
 import { render, screen, fireEvent } from '@testing-library/react';
 import { NoGoalsModal } from '../NoGoalsModal';
+import { vi } from 'vitest';
 
 describe('NoGoalsModal', () => {
   const mockProps = {
     open: true,
-    onCreateGoal: jest.fn(),
-    onTryDemo: jest.fn(),
-    onClose: jest.fn(),
+    onCreateGoal: vi.fn(),
+    onTryDemo: vi.fn(),
+    onClose: vi.fn(),
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('renders modal when open is true', () => {

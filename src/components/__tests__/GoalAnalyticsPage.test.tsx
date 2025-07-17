@@ -1,9 +1,10 @@
 
 import { render, screen, fireEvent } from '@testing-library/react';
 import { GoalAnalyticsPage } from '../GoalAnalyticsPage';
+import { vi } from 'vitest';
 
 // Mock the child components
-jest.mock('../ImprovedGoalTable', () => ({
+vi.mock('../ImprovedGoalTable', () => ({
   ImprovedGoalTable: ({ goals, onCreateGoal }: any) => (
     <div data-testid="goal-table">
       <span>Goals count: {goals.length}</span>
@@ -12,7 +13,7 @@ jest.mock('../ImprovedGoalTable', () => ({
   )
 }));
 
-jest.mock('../NoGoalsModal', () => ({
+vi.mock('../NoGoalsModal', () => ({
   NoGoalsModal: ({ open, onCreateGoal, onTryDemo }: any) => (
     open ? (
       <div data-testid="no-goals-modal">
